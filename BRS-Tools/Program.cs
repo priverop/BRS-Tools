@@ -1,4 +1,4 @@
-﻿namespace Packaging
+﻿namespace BRSTools
 {
     using System;
 
