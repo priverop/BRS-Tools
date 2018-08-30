@@ -12,3 +12,7 @@ Romhacking tools for Black Rock Shooter PSP
 - GUI.
 - Extract BIN/GZ feature.
 - Compress BIN/GZ feature.
+
+## Credits
+- @pleonex for his YARHL library https://github.com/SceneGate/Yarhl and his help.
+- @darkmet98 romhacking help.
