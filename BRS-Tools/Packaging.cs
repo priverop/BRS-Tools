@@ -102,10 +102,7 @@
 
         public void Repack(string newFileName){
 
-            if(File.Exists(this.getUnpackDirNameSlash() + newFileName)){
-                Console.WriteLine("File " + newFileName + " already exists. It will be overwritten.");
-                File.Delete(this.getUnpackDirNameSlash() + newFileName);
-            }
+            this.checkAndDeleteIfExists(this.getUnpackDirNameSlash() + newFileName);
 
             string[] files = Directory.GetFiles(this.getUnpackDirName());
 
@@ -138,6 +135,14 @@
 
         private string removeDir(string fileName){
             return fileName.Remove(0, getUnpackDirName().Length+1); // +1 folder separator
+        }
+
+        private void checkAndDeleteIfExists(string filePath){
+            if (File.Exists(filePath))
+            {
+                Console.WriteLine("File " + filePath + " already exists. It will be overwritten.");
+                File.Delete(filePath);
+            }
         }
 
     }
