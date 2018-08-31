@@ -1,12 +1,13 @@
 ﻿namespace BRSTools
 {
     using System;
+    using System.IO;
 
     public class MainClass
     {
         public static void Main(string[] args)
         {
-            if (args.Length < 1 || args.Length > 2)
+            if (args.Length != 2)
             {
                 Console.Write("Wrong arguments.");
                 showUsage();
@@ -22,7 +23,11 @@
                         break;
 
                     case "-pack":
-                        // p.Pack();
+                        if (Directory.Exists(p.getUnpackDirName()))
+                            p.Repack(args[1]);
+                        else
+                            Console.WriteLine("Directory " + p.getUnpackDirName() + " doesn't exist. " +
+                                              "Please rename the unpack folder to " + p.getUnpackDirName());            
                         break;
 
                     default:
@@ -34,8 +39,8 @@
         }
 
         private static void showUsage(){
-            Console.WriteLine("Usage: Packaging -unpack <file1>");
-            Console.WriteLine("Usage: Packaging -pack");
+            Console.WriteLine("Usage: Packaging -unpack <fileToUnpack>");
+            Console.WriteLine("Usage: Packaging -pack <newFileName>");
         }
 
         private static void showCredits(){

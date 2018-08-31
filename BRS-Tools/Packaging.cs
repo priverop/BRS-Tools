@@ -8,7 +8,7 @@
     {
         private const string HEADER_FILENAME = "0 - Header";
         private const string BLOCK_FILENAME = " - Block";
-        private const string UNPACK_FOLDER = "UNPACK";
+        private string UNPACK_FOLDER = "UNPACK";
 
         public void Unpack(string fileToExtractName)
         {
@@ -29,9 +29,9 @@
                 DataReader fileToUnpackReader = new DataReader(fileToUnpackStream);
 
                 // Create folder to save unpacked files
-                Directory.CreateDirectory(UNPACK_FOLDER);
+                Directory.CreateDirectory(this.getUnpackDirName());
 
-                DataStream headerStream = new DataStream(UNPACK_FOLDER + "/" + HEADER_FILENAME, FileOpenMode.Write);
+                DataStream headerStream = new DataStream(this.getUnpackDirNameSlash() + HEADER_FILENAME, FileOpenMode.Write);
                 DataWriter writerHeader = new DataWriter(headerStream);
 
                 uint magid = fileToUnpackReader.ReadUInt32();
@@ -88,7 +88,7 @@
                     uint blockSize = nextBlockPointer - blockPointer;
 
                     // Save block
-                    DataStream blockStream = new DataStream(UNPACK_FOLDER + "/" +  i + BLOCK_FILENAME, FileOpenMode.Write);
+                    DataStream blockStream = new DataStream(this.getUnpackDirNameSlash() +  i + BLOCK_FILENAME, FileOpenMode.Write);
                     DataWriter blockWriter = new DataWriter(blockStream);
                     fileToUnpackStream.RunInPosition(
                         () => blockWriter.Write(fileToUnpackReader.ReadBytes((int)blockSize)),
@@ -98,5 +98,47 @@
                 }
             }
         }
+
+
+        public void Repack(string newFileName){
+
+            if(File.Exists(this.getUnpackDirNameSlash() + newFileName)){
+                Console.WriteLine("File " + newFileName + " already exists. It will be overwritten.");
+                File.Delete(this.getUnpackDirNameSlash() + newFileName);
+            }
+
+            string[] files = Directory.GetFiles(this.getUnpackDirName());
+
+            DataWriter packedFileWriter = new DataWriter(new DataStream(this.getUnpackDirNameSlash() +
+                                                           newFileName, FileOpenMode.Write));
+
+            foreach (string fileName in files){
+
+                if (!char.IsPunctuation(removeDir(fileName)[0])){
+
+                    DataReader fileToPackReader = new DataReader(new DataStream(fileName, FileOpenMode.Read));
+
+                    packedFileWriter.Write(fileToPackReader.ReadBytes((int)fileToPackReader.Stream.Length));
+                    fileToPackReader.Stream.Dispose();
+                }
+
+
+            }
+
+        }
+
+        public string getUnpackDirName(){
+            return this.UNPACK_FOLDER;
+        }
+
+        public string getUnpackDirNameSlash()
+        {
+            return this.UNPACK_FOLDER + "/";
+        }
+
+        private string removeDir(string fileName){
+            return fileName.Remove(0, getUnpackDirName().Length+1); // +1 folder separator
+        }
+
     }
 }
