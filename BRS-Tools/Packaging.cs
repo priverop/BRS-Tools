@@ -8,6 +8,7 @@
     {
         private const string HEADER_FILENAME = "0 - Header";
         private const string BLOCK_FILENAME = " - Block";
+        private const string UNPACK_FOLDER = "UNPACK";
 
         public void Unpack(string fileToExtractName)
         {
@@ -27,7 +28,10 @@
 
                 DataReader fileToUnpackReader = new DataReader(fileToUnpackStream);
 
-                DataStream headerStream = new DataStream(HEADER_FILENAME, FileOpenMode.Write);
+                // Create folder to save unpacked files
+                Directory.CreateDirectory(UNPACK_FOLDER);
+
+                DataStream headerStream = new DataStream(UNPACK_FOLDER + "/" + HEADER_FILENAME, FileOpenMode.Write);
                 DataWriter writerHeader = new DataWriter(headerStream);
 
                 uint magid = fileToUnpackReader.ReadUInt32();
@@ -84,7 +88,7 @@
                     uint blockSize = nextBlockPointer - blockPointer;
 
                     // Save block
-                    DataStream blockStream = new DataStream(i + BLOCK_FILENAME, FileOpenMode.Write);
+                    DataStream blockStream = new DataStream(UNPACK_FOLDER + "/" +  i + BLOCK_FILENAME, FileOpenMode.Write);
                     DataWriter blockWriter = new DataWriter(blockStream);
                     fileToUnpackStream.RunInPosition(
                         () => blockWriter.Write(fileToUnpackReader.ReadBytes((int)blockSize)),
