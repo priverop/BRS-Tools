@@ -99,29 +99,28 @@
             }
         }
 
-
         public void Repack(string newFileName){
 
             this.checkAndDeleteIfExists(this.getUnpackDirNameSlash() + newFileName);
 
             string[] files = Directory.GetFiles(this.getUnpackDirName());
 
-            DataWriter packedFileWriter = new DataWriter(new DataStream(this.getUnpackDirNameSlash() +
-                                                           newFileName, FileOpenMode.Write));
+            DataWriter packedFileWriter = new DataWriter(
+                new DataStream(this.getUnpackDirNameSlash() +
+                newFileName, FileOpenMode.Write));
 
-            foreach (string fileName in files){
+            foreach (string fileName in files)
+            {
 
-                if (!char.IsPunctuation(removeDir(fileName)[0])){
+                if (!char.IsPunctuation(removeDir(fileName)[0]))
+                {
 
                     DataReader fileToPackReader = new DataReader(new DataStream(fileName, FileOpenMode.Read));
 
                     packedFileWriter.Write(fileToPackReader.ReadBytes((int)fileToPackReader.Stream.Length));
                     fileToPackReader.Stream.Dispose();
                 }
-
-
             }
-
         }
 
         public string getUnpackDirName(){
@@ -134,7 +133,7 @@
         }
 
         private string removeDir(string fileName){
-            return fileName.Remove(0, getUnpackDirName().Length+1); // +1 folder separator
+            return fileName.Remove(0, this.getUnpackDirName().Length + 1); // +1 folder separator
         }
 
         private void checkAndDeleteIfExists(string filePath){
@@ -144,6 +143,5 @@
                 File.Delete(filePath);
             }
         }
-
     }
 }
