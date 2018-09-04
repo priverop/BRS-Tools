@@ -15,9 +15,15 @@
             else
             {
                 Packaging p = new Packaging();
+                TextManager tm = new TextManager();
 
                 switch (args[0])
                 {
+                    case "-extractText":
+                        tm.loadFile(args[1]);
+                        tm.exportPO();
+                        break;
+
                     case "-unpack":
                         p.Unpack(args[1]);
                         break;
@@ -39,8 +45,9 @@
         }
 
         private static void showUsage(){
-            Console.WriteLine("Usage: Packaging -unpack <fileToUnpack>");
-            Console.WriteLine("Usage: Packaging -pack <newFileName>");
+            Console.WriteLine("Usage: BRS-Tools.exe -unpack <fileToUnpack>");
+            Console.WriteLine("Usage: BRS-Tools.exe -pack <newFileName>");
+            Console.WriteLine("Usage: BRS-Tools.exe -extractText <fileToExtract>");
         }
 
         private static void showCredits(){
