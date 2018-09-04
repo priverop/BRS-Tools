@@ -20,13 +20,22 @@
         public const Byte TEXTSEPARATOR = 00;
         public const int FOOTERSIZE = 12; // TESTEAR
 
+        public Dictionary<string, string> Buttons { get; }
+
         // Imported TXT
         private List<int> newPointers;
         private List<string> newText;
 
+        // Buttons
+        public const string CROSS = "b(01)";
+        public const string SQUARE = "b(03)";
+
         public TextManager(){
             this.Pointers = new List<int>();
             this.Text = new List<string>();
+            this.Buttons = new Dictionary<string, string>();
+            this.Buttons.Add(CROSS, "<CROSSBUTTON>");
+            this.Buttons.Add(SQUARE, "<SQUAREBUTTON>");
         }
 
         public void loadFile(string fileToExtractName)
@@ -74,10 +83,18 @@
                 string sentence = this.Text[i];
                 if (string.IsNullOrEmpty(sentence))
                     sentence = "<!empty>";
-                poExport.Add(new PoEntry(sentence) { Context = i.ToString() });
+                poExport.Add(new PoEntry(this.CleanButtons(sentence)) { Context = i.ToString() });
             }
 
             poExport.ConvertTo<BinaryFormat>().Stream.WriteTo(this.FileName + ".po");
+        }
+
+
+        private string CleanButtons(string sentence){
+
+            return sentence.Replace(@"\", "")
+                           .Replace(CROSS, this.Buttons[CROSS])
+                           .Replace(SQUARE, this.Buttons[SQUARE]);
         }
     }
 }

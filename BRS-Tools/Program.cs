@@ -7,7 +7,7 @@
     {
         public static void Main(string[] args)
         {
-            if (args.Length != 2)
+            if (args.Length > 3 && args.Length < 2)
             {
                 Console.Write("Wrong arguments.");
                 showUsage();
@@ -22,6 +22,9 @@
                     case "-extractText":
                         tm.loadFile(args[1]);
                         tm.exportPO();
+                        break;
+
+                    case "-insertText":
                         break;
 
                     case "-unpack":
@@ -48,6 +51,7 @@
             Console.WriteLine("Usage: BRS-Tools.exe -unpack <fileToUnpack>");
             Console.WriteLine("Usage: BRS-Tools.exe -pack <newFileName>");
             Console.WriteLine("Usage: BRS-Tools.exe -extractText <fileToExtract>");
+            Console.WriteLine("Usage: BRS-Tools.exe -insertText <po> <originalFile>");
         }
 
         private static void showCredits(){
