@@ -25,12 +25,14 @@
         // Imported TXT
         private List<int> newPointers;
         private List<string> newText;
+        public int NewFileSize { get; set; }
 
         // Buttons
         public const string CROSS = "b(01)";
         public const string SQUARE = "b(03)";
 
-        public TextManager(){
+        public TextManager()
+        {
             this.Pointers = new List<int>();
             this.Text = new List<string>();
             this.Buttons = new Dictionary<string, string>();
@@ -38,9 +40,10 @@
             this.Buttons.Add(SQUARE, "<SQUAREBUTTON>");
         }
 
-        public void loadFile(string fileToExtractName)
+        public void LoadFile(string fileToExtractName)
         {
-            using (DataStream fileToExtractStream = new DataStream(fileToExtractName, FileOpenMode.Read)){
+            using (DataStream fileToExtractStream = new DataStream(fileToExtractName, FileOpenMode.Read))
+            {
                 DataReader fileToExtractReader = new DataReader(fileToExtractStream);
 
                 this.FileName = fileToExtractName;
@@ -54,21 +57,22 @@
                 long pointerTableSize = firstPointer - currentPosition;
                 fileToExtractStream.Position = currentPosition;
 
-                while(fileToExtractStream.Position != firstPointer)
+                while (fileToExtractStream.Position != firstPointer)
                 {
                     this.Pointers.Add(fileToExtractReader.ReadInt32());
                 }
 
                 int lastPointer = this.Pointers[this.Pointers.Count - 1];
 
-                while(fileToExtractStream.Position != (this.FileSize - FOOTERSIZE))
+                while (fileToExtractStream.Position != (this.FileSize - FOOTERSIZE))
                 {
                     this.Text.Add(fileToExtractReader.ReadString());
                 }
             }
         }
 
-        public void exportPO(){
+        public void ExportPO()
+        {
 
             Po poExport = new Po
             {
@@ -83,18 +87,96 @@
                 string sentence = this.Text[i];
                 if (string.IsNullOrEmpty(sentence))
                     sentence = "<!empty>";
-                poExport.Add(new PoEntry(this.CleanButtons(sentence)) { Context = i.ToString() });
+                poExport.Add(new PoEntry(this.RemoveButtons(sentence)) { Context = i.ToString() });
             }
 
             poExport.ConvertTo<BinaryFormat>().Stream.WriteTo(this.FileName + ".po");
         }
 
+        public void ImportPO(string poFileName)
+        {
 
-        private string CleanButtons(string sentence){
+            DataStream inputPO = new DataStream(poFileName, FileOpenMode.Read);
+            BinaryFormat binaryFile = new BinaryFormat(inputPO);
+            Po newPO = binaryFile.ConvertTo<Po>();
+            inputPO.Dispose();
+
+            this.newPointers = new List<int>();
+            this.newText = new List<string>();
+
+            NewFileSize = this.GetHeaderSize();
+
+            int pointer = Pointers[0];
+            this.newPointers.Add(pointer);
+
+            NewFileSize += sizeof(int);
+
+            foreach (var entry in newPO.Entries)
+            {
+                string sentence = string.IsNullOrEmpty(entry.Translated) ?
+                    entry.Original : entry.Translated;
+                if (sentence == "<!empty>")
+                    sentence = string.Empty;
+                sentence = AddButtons(sentence);
+                this.newText.Add(sentence);
+
+                NewFileSize += sentence.Length + 1;
+
+                // Last entry doesn't recalc pointer
+                if (entry.Context != (newPO.Entries.Count-1).ToString()){
+                    pointer += sentence.Length + 1; // After every string there is an extra 00 byte
+
+                    this.newPointers.Add(pointer);
+                    NewFileSize += sizeof(int);
+                }
+                else{
+                    Console.WriteLine("asd");
+                }
+            }
+
+        }
+
+        public void Export()
+        {
+            using(DataStream exportedFileStream = new DataStream(this.FileName + "_new", FileOpenMode.Write)){
+                DataWriter exportedFileWriter = new DataWriter(exportedFileStream);
+
+                exportedFileWriter.Write(this.MagID);
+                exportedFileWriter.Write(this.NewFileSize);
+                exportedFileWriter.Write(this.newPointers.Count);
+                exportedFileWriter.Write(this.Unknown);
+
+                foreach(var pointer in this.newPointers){
+                    exportedFileWriter.Write(pointer);
+                }
+
+                foreach (var sentence in this.newText)
+                {
+                    exportedFileWriter.Write(sentence);
+                }
+                //for (int i = 0; i < FOOTERSIZE; i++)
+                    //exportedFileWriter.Write(00);
+            }
+        }
+
+        private string RemoveButtons(string sentence)
+        {
 
             return sentence.Replace(@"\", "")
                            .Replace(CROSS, this.Buttons[CROSS])
                            .Replace(SQUARE, this.Buttons[SQUARE]);
+        }
+
+        private string AddButtons(string sentence)
+        {
+            return sentence.Replace(this.Buttons[CROSS], CROSS)
+                           .Replace(this.Buttons[SQUARE], SQUARE)
+                           .Replace("b", @"\b");
+
+        }
+
+        private int GetHeaderSize(){
+            return sizeof(int) * 4; //MagID + FileSize + NumPointers + Unknown
         }
     }
 }

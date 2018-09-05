@@ -20,11 +20,14 @@
                 switch (args[0])
                 {
                     case "-extractText":
-                        tm.loadFile(args[1]);
-                        tm.exportPO();
+                        tm.LoadFile(args[1]);
+                        tm.ExportPO();
                         break;
 
                     case "-insertText":
+                        tm.LoadFile(args[1]);
+                        tm.ImportPO(args[2]);
+                        tm.Export();
                         break;
 
                     case "-unpack":
@@ -51,7 +54,7 @@
             Console.WriteLine("Usage: BRS-Tools.exe -unpack <fileToUnpack>");
             Console.WriteLine("Usage: BRS-Tools.exe -pack <newFileName>");
             Console.WriteLine("Usage: BRS-Tools.exe -extractText <fileToExtract>");
-            Console.WriteLine("Usage: BRS-Tools.exe -insertText <po> <originalFile>");
+            Console.WriteLine("Usage: BRS-Tools.exe -insertText <originalFile> <po>");
         }
 
         private static void showCredits(){
