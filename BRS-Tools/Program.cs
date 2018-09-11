@@ -35,11 +35,7 @@
                         break;
 
                     case "-pack":
-                        if (Directory.Exists(p.getUnpackDirName()))
-                            p.Repack(args[1]);
-                        else
-                            Console.WriteLine("Directory " + p.getUnpackDirName() + " doesn't exist. " +
-                                              "Please rename the unpack folder to " + p.getUnpackDirName());            
+                            p.Repack(args[1], args[2]);
                         break;
 
                     default:
@@ -52,7 +48,7 @@
 
         private static void showUsage(){
             Console.WriteLine("Usage: BRS-Tools.exe -unpack <fileToUnpack>");
-            Console.WriteLine("Usage: BRS-Tools.exe -pack <newFileName>");
+            Console.WriteLine("Usage: BRS-Tools.exe -pack <newFileName> <folderName>");
             Console.WriteLine("Usage: BRS-Tools.exe -extractText <fileToExtract>");
             Console.WriteLine("Usage: BRS-Tools.exe -insertText <originalFile> <po>");
         }

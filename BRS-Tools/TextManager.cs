@@ -59,14 +59,15 @@
 
                 while (fileToExtractStream.Position != firstPointer)
                 {
-                    this.Pointers.Add(fileToExtractReader.ReadInt32());
-                }
+                    int pointer = fileToExtractReader.ReadInt32();
+                    this.Pointers.Add(pointer);
+                    fileToExtractStream.PushCurrentPosition();
 
-                int lastPointer = this.Pointers[this.Pointers.Count - 1];
+                    fileToExtractStream.RunInPosition(
+                        () => this.Text.Add(fileToExtractReader.ReadString()),
+                        pointer);
 
-                while (fileToExtractStream.Position != (this.FileSize - FOOTERSIZE))
-                {
-                    this.Text.Add(fileToExtractReader.ReadString());
+                    fileToExtractStream.PopPosition();
                 }
             }
         }
@@ -129,9 +130,6 @@
                     this.newPointers.Add(pointer);
                     NewFileSize += sizeof(int);
                 }
-                else{
-                    Console.WriteLine("asd");
-                }
             }
 
         }
@@ -142,6 +140,7 @@
                 DataWriter exportedFileWriter = new DataWriter(exportedFileStream);
 
                 exportedFileWriter.Write(this.MagID);
+                long fileSizePosition = exportedFileStream.Position;
                 exportedFileWriter.Write(this.NewFileSize);
                 exportedFileWriter.Write(this.newPointers.Count);
                 exportedFileWriter.Write(this.Unknown);
@@ -154,8 +153,14 @@
                 {
                     exportedFileWriter.Write(sentence);
                 }
-                //for (int i = 0; i < FOOTERSIZE; i++)
-                    //exportedFileWriter.Write(00);
+                long currentPosition = exportedFileStream.Position;
+                exportedFileWriter.WritePadding(00, 0x10, false);
+                long endPosition = exportedFileStream.Position;
+
+                NewFileSize += (int)(endPosition - currentPosition);
+                exportedFileStream.Position = fileSizePosition;
+                exportedFileWriter.Write(this.NewFileSize);
+
             }
         }
 
