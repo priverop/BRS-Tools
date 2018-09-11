@@ -29,9 +29,9 @@
                 DataReader fileToUnpackReader = new DataReader(fileToUnpackStream);
 
                 // Create folder to save unpacked files
-                Directory.CreateDirectory(this.getUnpackDirName());
+                Directory.CreateDirectory(this.getUnpackDirName() + "_" + fileToExtractName);
 
-                DataStream headerStream = new DataStream(this.getUnpackDirNameSlash() + HEADER_FILENAME, FileOpenMode.Write);
+                DataStream headerStream = new DataStream(this.getUnpackDirName() + "_" + fileToExtractName + "/" + HEADER_FILENAME, FileOpenMode.Write);
                 DataWriter writerHeader = new DataWriter(headerStream);
 
                 uint magid = fileToUnpackReader.ReadUInt32();
@@ -88,7 +88,7 @@
                     uint blockSize = nextBlockPointer - blockPointer;
 
                     // Save block
-                    DataStream blockStream = new DataStream(this.getUnpackDirNameSlash() +  i + BLOCK_FILENAME, FileOpenMode.Write);
+                    DataStream blockStream = new DataStream(this.getUnpackDirName() + "_" + fileToExtractName + "/" +  i + BLOCK_FILENAME, FileOpenMode.Write);
                     DataWriter blockWriter = new DataWriter(blockStream);
                     fileToUnpackStream.RunInPosition(
                         () => blockWriter.Write(fileToUnpackReader.ReadBytes((int)blockSize)),
@@ -99,26 +99,31 @@
             }
         }
 
-        public void Repack(string newFileName){
+        public void Repack(string newFileName, string folderName){
 
-            this.checkAndDeleteIfExists(this.getUnpackDirNameSlash() + newFileName);
+            this.checkAndDeleteIfExists(folderName + "/" + newFileName);
 
-            string[] files = Directory.GetFiles(this.getUnpackDirName());
+            if (!Directory.Exists(folderName))
+                Console.WriteLine("Directory " + folderName + " doesn't exist. " +
+                                  "Please rename the unpack folder to " + folderName);
+            else{
+                string[] files = Directory.GetFiles(folderName);
 
-            DataWriter packedFileWriter = new DataWriter(
-                new DataStream(this.getUnpackDirNameSlash() +
-                newFileName, FileOpenMode.Write));
+                DataWriter packedFileWriter = new DataWriter(
+                    new DataStream(folderName + "/" +
+                    newFileName, FileOpenMode.Write));
 
-            foreach (string fileName in files)
-            {
-
-                if (!char.IsPunctuation(removeDir(fileName)[0]))
+                foreach (string fileName in files)
                 {
 
-                    DataReader fileToPackReader = new DataReader(new DataStream(fileName, FileOpenMode.Read));
+                    if (!char.IsPunctuation(removeDir(fileName)[0]))
+                    {
 
-                    packedFileWriter.Write(fileToPackReader.ReadBytes((int)fileToPackReader.Stream.Length));
-                    fileToPackReader.Stream.Dispose();
+                        DataReader fileToPackReader = new DataReader(new DataStream(fileName, FileOpenMode.Read));
+
+                        packedFileWriter.Write(fileToPackReader.ReadBytes((int)fileToPackReader.Stream.Length));
+                        fileToPackReader.Stream.Dispose();
+                    }
                 }
             }
         }
